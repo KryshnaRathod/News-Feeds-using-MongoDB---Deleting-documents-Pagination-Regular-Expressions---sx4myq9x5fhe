@@ -1,18 +1,20 @@
+const mongoURI = "mongodb://localhost:27017" + "/collegeDetails";
 
+let mongoose = require("mongoose");
+const { collegeSchema } = require("./schema");
 
-//const mongodb = require('mongodb');
+mongoose
+  .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => {
+    console.log("connection established with mongodb server online");
+  })
+  .catch((err) => {
+    console.log("error while connection", err);
+  });
+let collegeModel = mongoose.model("collegerecords", collegeSchema);
+let data = require("./data");
+collegeModel.deleteMany().then((e) => {
+  collegeModel.insertMany(data.data);
+});
 
-const mongoURI = "mongodb://localhost:27017" + "/newsFeed"
-
-let mongoose = require('mongoose');
-const { newsArticleSchema } = require('./schema')
-
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => { console.log("connection established with mongodb server online"); })
-    .catch(err => {
-        console.log("error while connection", err)
-    });
-let newsArticleModel = mongoose.model('dailynews', newsArticleSchema)
-
-
-exports.newsArticleModel = newsArticleModel;
+exports.connection = collegeModel;
