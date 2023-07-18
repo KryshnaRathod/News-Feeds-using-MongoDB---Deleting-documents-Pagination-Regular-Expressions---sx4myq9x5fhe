@@ -1,46 +1,56 @@
-const express = require('express')
-const app = express()
+
+    const express = require("express");
+const app = express();
 const bodyParser = require("body-parser");
-const port = 8080
+const port = 8080;
+
 // Parse JSON bodies (as sent by API clients)
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-const { newsArticleModel } = require('./connector')
+const { connection } = require("./connector");
+const { connections } = require("mongoose");
 
-console.log('started the server')
+app.get("/findColleges", async (req, res) => {
+  let query = {};
+  let name = req.query.name;
+  let city = req.query.city;
+  let state = req.query.state;
+  let exam = req.query.exam;
+  let course = req.query.course;
+  let maxFees = req.query.maxFees;
+  let minPackage = req.query.minPackage;
+  if (name) {
+    // query['name'] = { $regex: eval('/.*' + name + '.*/i') }
+    let regex = new RegExp(`${name}`, "i");
+    query["name"] = { $regex: regex };
+  }
 
+  if (city) {
+    query["city"] = { $regex: eval("/.*" + city + ".*/i") };
+  }
 
-app.get('/newFeeds', async (req, res) => {
-    let limit = req.query.limit;
-    let offset = req.query.offset;
-    console.log(limit, offset)
-    if (limit !== undefined && !isNaN(limit) && offset !== undefined && !isNaN(offset))
+  if (state) {
+    query["state"] = { $regex: eval("/.*" + state + ".*/i") };
+  }
+  if (exam) {
+    query["exam"] = { $regex: eval("/.*" + exam + ".*/i") };
+  }
 
-        await newsArticleModel.find({}).skip(parseInt(offset)).limit(parseInt(limit)).then(e => {
-            // console.log(e)
-            return res.send(e)
-        })
-    else if (limit !== undefined && !isNaN(limit)) {
-        await newsArticleModel.find({}).limit(parseInt(limit)).then(e => {
-            // console.log(e)
-            return res.send(e)
-        })
-    } else if (offset !== undefined && !isNaN(offset)) {
-        await newsArticleModel.find({}).skip(parseInt(offset)).limit(10).then(e => {
-            // console.log(e)
-            return res.send(e)
-        })
-    }
-    else
-        await newsArticleModel.find({}).limit(10).then(e => {
-            // console.log(e)
-            return res.send(e)
-        })
+  if (course) {
+    query["course"] = { $regex: eval("/.*" + course + ".*/i") };
+  }
+  if (maxFees) {
+    query["maxFees"] = { $lte: parseFloat(maxFees) };
+  }
+  if (minPackage) {
+    query["minPackage"] = { $gte: parseFloat(minPackage) };
+  }
+  console.log(query);
+  connection.find(query).then((e) => {
+    res.json(e);
+  });
+});
 
-
-
-
-})
-app.listen(port, () => console.log(`App listening on port ${port}!`))
+app.listen(port, () => console.log(`App listening on port ${port}!`));
 
 module.exports = app;
